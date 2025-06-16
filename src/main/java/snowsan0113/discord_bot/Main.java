@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import snowsan0113.discord_bot.command.HelloWorldCommand;
 import snowsan0113.discord_bot.command.VoteCommand;
 import snowsan0113.discord_bot.listener.StringSelectListener;
@@ -29,7 +30,10 @@ public class Main extends ListenerAdapter {
             jda.updateCommands()
                     .addCommands(Commands.slash("helloworld", "helloworldを出力する。"))
                     .addCommands(Commands.slash("vote", "投票コマンド")
-                            .addOption(OptionType.STRING, "vote_option", "投票の選択し"))
+                            .addOptions(
+                                    new OptionData(OptionType.STRING, "vote_option", "投票の選択肢（コンマで区切る）", true),
+                                    new OptionData(OptionType.STRING, "title", "投票のタイトル", true),
+                                    new OptionData(OptionType.INTEGER, "time", "投票時間", true)))
                     .queue();
         }
     }
