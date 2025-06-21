@@ -3,10 +3,13 @@ package snowsan0113.discord_bot.manager;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ConfigManager {
 
@@ -20,6 +23,17 @@ public class ConfigManager {
         JsonObject raw_json = getRawJson();
         JsonObject bot_obj = raw_json.getAsJsonObject("bot_setting");
         return bot_obj.get("token").getAsString();
+    }
+
+    public static String getObjectValue(String key) throws IOException {
+        JsonObject raw_json = getRawJson();
+        String[] keys = key.split("\\."); // 「.」で区切る
+        JsonObject now_json = raw_json; //jsonを代入する
+        for (int n = 0; n < keys.length - 1; n++) { //keyの1個前未満をループする。（keyが2個だと、1回だけ実行）
+            now_json = now_json.getAsJsonObject(keys[n]); // jsonを代入する
+        }
+
+        return now_json.get(keys[keys.length - 1]).getAsString(); //key数 - 1（最後のキー）を取得する
     }
 
     public static JsonObject getRawJson() throws IOException {
