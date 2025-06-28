@@ -1,9 +1,9 @@
 package snowsan0113.discord_bot.manager;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
+import net.dv8tion.jda.api.entities.Role;
 import org.jetbrains.annotations.NotNull;
+import snowsan0113.discord_bot.Main;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -23,6 +23,19 @@ public class ConfigManager {
         JsonObject raw_json = getRawJson();
         JsonObject bot_obj = raw_json.getAsJsonObject("bot_setting");
         return bot_obj.get("token").getAsString();
+    }
+
+    public static List<Role> getRoles() throws IOException {
+        List<Role> roleList = new ArrayList<>();
+        JsonObject raw = ConfigManager.getRawJson();
+        JsonArray role_array = raw.getAsJsonObject("reaction_role").getAsJsonArray("panel_role");
+        for (JsonElement element : role_array) {
+            String role_string = element.getAsString();
+            Role role = Main.getJDA().getRoleById(role_string);
+            roleList.add(role);
+        }
+
+        return roleList;
     }
 
     public static String getObjectValue(String key) throws IOException {
