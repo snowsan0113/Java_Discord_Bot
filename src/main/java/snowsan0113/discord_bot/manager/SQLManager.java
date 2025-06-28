@@ -2,7 +2,9 @@ package snowsan0113.discord_bot.manager;
 
 import java.io.IOException;
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class SQLManager {
 
@@ -28,27 +30,56 @@ public class SQLManager {
         }
     }
 
-    public void select() {
+    public int select(UUID uuid, String discordID) throws SQLException {
         Connection con = null;
-        PreparedStatement ps = null;
-
         try {
             con = DriverManager.getConnection(JDBC_URL, USER_ID, USER_PASS);
+            con.setAutoCommit(false);
 
-            String sql = "INSERT INTO test (name, email) VALUES (?, ?)";
-            ps = con.prepareStatement(sql);
-            ps.setString(1, "田中太郎");
-            ps.setString(2, "aa@example.com");
-            ps.executeUpdate();
+            PreparedStatement checkStmt = con.prepareStatement(
+                    "SELECT * FROM player_links WHERE uuid = ? AND discord_id = ?"
+            );
+            checkStmt.setString(1, uuid.toString());
+            checkStmt.setString(2, discordID);
+            ResultSet rs = checkStmt.executeQuery();
+            if (rs.next()) {
+                //すでに登録済み
+                return -1;
+            }
+
+            // プレイヤー登録
+            PreparedStatement playerStmt = con.prepareStatement(
+                    "INSERT IGNORE INTO minecraft_players (uuid, created_at) VALUES (?, ?)"
+            );
+            playerStmt.setString(1, uuid.toString());
+            playerStmt.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+            playerStmt.executeUpdate();
+
+            // Discordユーザー登録
+            PreparedStatement discordStmt = con.prepareStatement(
+                    "INSERT IGNORE INTO discord_users (discord_id, created_at) VALUES (?, ?)"
+            );
+            discordStmt.setString(1, discordID);
+            discordStmt.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+            discordStmt.executeUpdate();
+
+            PreparedStatement linkStmt = con.prepareStatement(
+                    "INSERT INTO player_links (uuid, discord_id, linked_at) VALUES (?, ?, ?)"
+            );
+            linkStmt.setString(1, uuid.toString());
+            linkStmt.setString(2, discordID);
+            linkStmt.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
+            linkStmt.executeUpdate();
+
+            con.commit();
+            return 0;
         }
         catch (SQLException exception) {
             exception.printStackTrace();
+            con.rollback();
         }
         finally {
             try {
-                if (ps != null) {
-                    ps.close();
-                }
                 if (con != null) {
                     con.close();
                 }
@@ -57,5 +88,7 @@ public class SQLManager {
                 exception.printStackTrace();
             }
         }
+
+        return -2;
     }
 }
