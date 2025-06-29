@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import snowsan0113.discord_bot.command.HelloWorldCommand;
+import snowsan0113.discord_bot.command.MusicCommand;
 import snowsan0113.discord_bot.command.RoleReactionCommand;
 import snowsan0113.discord_bot.command.VoteCommand;
 import snowsan0113.discord_bot.listener.ReactionListener;
@@ -29,10 +30,17 @@ public class Main extends ListenerAdapter {
                     .addEventListeners(new StringSelectListener())
                     .addEventListeners(new RoleReactionCommand())
                     .addEventListeners(new ReactionListener())
+                    .addEventListeners(new MusicCommand())
                     .build();
             jda.awaitReady();
 
             jda.updateCommands()
+                    .addCommands(Commands.slash("play", "音楽を再生するコマンド")
+                            .addOption(OptionType.STRING, "url", "再生したいURL　もしくは　再生したいキーワード", true))
+                    .addCommands(Commands.slash("play-info", "再生情報を表示するコマンド"))
+                    .addCommands(Commands.slash("skip", "音楽をスキップするコマンド"))
+                    .addCommands(Commands.slash("volume", "音楽の音量を設定するコマンド")
+                            .addOption(OptionType.INTEGER, "volume", "音量"))
                     .addCommands(Commands.slash("helloworld", "helloworldを出力する。"))
                     .addCommands(Commands.slash("vote", "投票コマンド")
                             .addOptions(
