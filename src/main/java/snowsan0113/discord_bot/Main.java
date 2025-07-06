@@ -10,6 +10,7 @@ import snowsan0113.discord_bot.command.HelloWorldCommand;
 import snowsan0113.discord_bot.command.MusicCommand;
 import snowsan0113.discord_bot.command.RoleReactionCommand;
 import snowsan0113.discord_bot.command.VoteCommand;
+import snowsan0113.discord_bot.listener.ButtonClickListener;
 import snowsan0113.discord_bot.listener.ReactionListener;
 import snowsan0113.discord_bot.listener.StringSelectListener;
 import snowsan0113.discord_bot.manager.ConfigManager;
@@ -31,6 +32,7 @@ public class Main extends ListenerAdapter {
                     .addEventListeners(new RoleReactionCommand())
                     .addEventListeners(new ReactionListener())
                     .addEventListeners(new MusicCommand())
+                    .addEventListeners(new ButtonClickListener())
                     .build();
             jda.awaitReady();
 

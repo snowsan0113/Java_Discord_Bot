@@ -22,15 +22,23 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.managers.AudioManager;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public class MusicManager {
+
+    private static final List<Emoji> emoji_list = Arrays.asList(
+            Emoji.fromUnicode("1\uFE0F"),
+            Emoji.fromUnicode("2\uFE0F"),
+            Emoji.fromUnicode("3\uFE0F"),
+            Emoji.fromUnicode("4\uFE0F"),
+            Emoji.fromUnicode("5\uFE0F")
+    );
 
     private static MusicManager instance;
     public final AudioPlayerManager playerManager = new DefaultAudioPlayerManager();
@@ -105,14 +113,21 @@ public class MusicManager {
                     List<AudioTrack> track_list = playlist.getTracks();
                     getGuildAudioPlayer(channel.getGuild()).setWaitTrack(track_list);
                     EmbedBuilder embed = new EmbedBuilder();
+                    int get_size = Math.min(track_list.size(), 5);
                     embed.setTitle("再生したい音楽を選択してください");
-                    for (int n = 0; n < Math.min(track_list.size(), 5); n++) {
+                    for (int n = 0; n < get_size; n++) {
                         AudioTrack track = track_list.get(n);
                         AudioTrackInfo info = track.getInfo();
-                        embed.addField(info.title + "(" + info.author + ")", info.uri, true);
+                        embed.addField( emoji_list.get(n).getFormatted() + info.title + "(" + info.author + ")", info.uri, true);
                     }
                     embed.setColor(Color.GREEN);
-                    channel.sendMessageEmbeds(embed.build()).complete();
+                    channel.sendMessageEmbeds(embed.build())
+                            .addActionRow(get_size >= 1 ? Button.primary("button_1", "1") : Button.primary("button_1", "1").asDisabled(),
+                                    get_size >= 2 ? Button.primary("button_2", "2") : Button.primary("button_2", "2").asDisabled(),
+                                    get_size >= 3 ? Button.primary("button_3", "3") : Button.primary("button_3", "3").asDisabled(),
+                                    get_size >= 4 ? Button.primary("button_4", "4") : Button.primary("button_4", "4").asDisabled(),
+                                    get_size == 5 ? Button.primary("button_5", "5") : Button.primary("button_5", "5").asDisabled())
+                            .complete();
                 }
                 else {
                     AudioTrack track = playlist.getTracks().get(0);
