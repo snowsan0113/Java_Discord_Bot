@@ -14,6 +14,9 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.requests.restaction.CacheRestAction;
 import snowsan0113.discord_bot.manager.music.MusicManager;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 public class MusicCommand extends ListenerAdapter {
 
     @Override
@@ -29,7 +32,13 @@ public class MusicCommand extends ListenerAdapter {
 
         if ("play".equalsIgnoreCase(cmd)) {
             OptionMapping option_url = event.getOption("url");
-            musicManager.loadAndPlay(channel.asTextChannel(), option_url.getAsString());
+            String url_string = option_url.getAsString();
+            try {
+                URL url = new URL(url_string);
+                musicManager.loadAndPlay(channel.asTextChannel(), url.toString());
+            } catch (MalformedURLException e) {
+                musicManager.loadAndPlay(channel.asTextChannel(), "ytsearch:" + url_string);
+            }
         }
         else if ("skip".equalsIgnoreCase(cmd)) {
             musicManager.skipTrack(channel.asTextChannel());
@@ -51,6 +60,10 @@ public class MusicCommand extends ListenerAdapter {
                 embed.addField("情報", "何も再生していません", false);
             }
             channel.sendMessageEmbeds(embed.build()).queue();
+        }
+        else if ("select-track".equalsIgnoreCase(cmd)) {
+            OptionMapping option = event.getOption("index");
+            musicManager.selectPlay(channel.asTextChannel(), option.getAsInt());
         }
     }
 

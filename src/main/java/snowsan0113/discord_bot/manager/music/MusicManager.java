@@ -25,7 +25,9 @@ import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.managers.AudioManager;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MusicManager {
@@ -99,18 +101,33 @@ public class MusicManager {
 
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
-                AudioTrack firstTrack = playlist.getTracks().get(0);
-                AudioTrackInfo info = firstTrack.getInfo();
+                if (playlist.isSearchResult()) {
+                    List<AudioTrack> track_list = playlist.getTracks();
+                    getGuildAudioPlayer(channel.getGuild()).setWaitTrack(track_list);
+                    EmbedBuilder embed = new EmbedBuilder();
+                    embed.setTitle("再生したい音楽を選択してください");
+                    for (int n = 0; n < Math.min(track_list.size(), 5); n++) {
+                        AudioTrack track = track_list.get(n);
+                        AudioTrackInfo info = track.getInfo();
+                        embed.addField(info.title + "(" + info.author + ")", info.uri, true);
+                    }
+                    embed.setColor(Color.GREEN);
+                    channel.sendMessageEmbeds(embed.build()).complete();
+                }
+                else {
+                    AudioTrack track = playlist.getTracks().get(0);
+                    AudioTrackInfo info = track.getInfo();
 
-                EmbedBuilder embed = new EmbedBuilder();
-                embed.setTitle("音楽が再生されます");
-                embed.addField("タイトル：", info.title, false);
-                embed.addField("URL：", info.uri, false);
-                embed.addField("時間：", minToString(info.length), false);
-                embed.setColor(Color.GREEN);
-                channel.sendMessageEmbeds(embed.build()).complete();
+                    EmbedBuilder embed = new EmbedBuilder();
+                    embed.setTitle("音楽が再生されます");
+                    embed.addField("タイトル：", info.title, false);
+                    embed.addField("URL：", info.uri, false);
+                    embed.addField("時間：", minToString(info.length), false);
+                    embed.setColor(Color.GREEN);
+                    channel.sendMessageEmbeds(embed.build()).complete();
 
-                play(channel.getGuild(), channel, musicManager, firstTrack);
+                    play(channel.getGuild(), channel, musicManager, track);
+                }
             }
 
             @Override
@@ -130,6 +147,13 @@ public class MusicManager {
                 exception.printStackTrace();
             }
         });
+    }
+
+    public void selectPlay(TextChannel channel, int index) {
+        GuildMusicManager guild_manager = getGuildAudioPlayer(channel.getGuild());
+        AudioTrack track = guild_manager.getWaitTrack().get(index);
+        play(channel.getGuild(), channel, guild_manager, track);
+        guild_manager.setWaitTrack(null);
     }
 
     public void play(Guild guild, TextChannel channel, GuildMusicManager musicManager, AudioTrack track) {
@@ -198,10 +222,12 @@ public class MusicManager {
     public static class GuildMusicManager {
         public final AudioPlayer player;
         public final TrackScheduler scheduler;
+        public List<AudioTrack> wait_track;
 
         public GuildMusicManager(AudioPlayerManager manager) {
             player = manager.createPlayer();
             scheduler = new TrackScheduler(player);
+            wait_track = new ArrayList<>();
             player.addListener(scheduler);
         }
 
@@ -211,6 +237,14 @@ public class MusicManager {
 
         public AudioTrack getTrack() {
             return player.getPlayingTrack();
+        }
+
+        public List<AudioTrack> getWaitTrack() {
+            return wait_track;
+        }
+
+        public void setWaitTrack(List<AudioTrack> track) {
+            this.wait_track = track;
         }
     }
 

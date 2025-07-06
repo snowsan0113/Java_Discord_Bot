@@ -41,6 +41,8 @@ public class Main extends ListenerAdapter {
                     .addCommands(Commands.slash("skip", "音楽をスキップするコマンド"))
                     .addCommands(Commands.slash("volume", "音楽の音量を設定するコマンド")
                             .addOption(OptionType.INTEGER, "volume", "音量"))
+                    .addCommands(Commands.slash("select-track", "再生したいトラックを選ぶ")
+                            .addOption(OptionType.INTEGER, "index", "再生したいトラック", true))
                     .addCommands(Commands.slash("helloworld", "helloworldを出力する。"))
                     .addCommands(Commands.slash("vote", "投票コマンド")
                             .addOptions(
